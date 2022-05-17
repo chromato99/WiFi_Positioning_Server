@@ -14,6 +14,14 @@ let mysql = require('mysql');
 
 const db_config = require('./src/db-config');
 
+
+
+
+let core = require('./src/core');
+
+
+
+
 app.use(compression());
 app.use(express.static('public')); // Set static file location
 
@@ -35,63 +43,72 @@ app.use(passport.session());
 
 // Passport.js setting
 passport.use(new LocalStrategy(
-    function(username, password, done) {
-    let db = mysql.createConnection(db_config);
-    db.connect();
-    // Get user data from DB to check password
-    db.query('SELECT * FROM user WHERE username=?', [username], (err, results) => {
-        if(err) return done(err);
-        if(!results[0]) // Wrong username
-            return done('please check your username.');
-        else {
-            db.query('UPDATE user SET last_connection=NOW() WHERE username=?', [username]); // Set last connection datetime
-            db.end();
-            let user = results[0];
-            const [encrypted, salt] = user.password.split("$"); // splitting password and salt
-            crypto.pbkdf2(password, salt, 65536, 64, 'sha512', (err, derivedKey) => { // Encrypting input password
-                if(err) return done(err);
-                if(derivedKey.toString("hex") === encrypted) // Check its same
-                    return done(null, user);
-                else
-                    return done('please check your password.');
-            });//pbkdf2
-        }
-    });//query
+    function (username, password, done) {
+        let db = mysql.createConnection(db_config);
+        db.connect();
+        // Get user data from DB to check password
+        db.query('SELECT * FROM user WHERE username=?', [username], (err, results) => {
+            if (err) return done(err);
+            if (!results[0]) // Wrong username
+                return done('please check your username.');
+            else {
+                db.query('UPDATE user SET last_connection=NOW() WHERE username=?', [username]); // Set last connection datetime
+                db.end();
+                let user = results[0];
+                const [encrypted, salt] = user.password.split("$"); // splitting password and salt
+                crypto.pbkdf2(password, salt, 65536, 64, 'sha512', (err, derivedKey) => { // Encrypting input password
+                    if (err) return done(err);
+                    if (derivedKey.toString("hex") === encrypted) // Check its same
+                        return done(null, user);
+                    else
+                        return done('please check your password.');
+                });//pbkdf2
+            }
+        });//query
 
     }
 ));
-passport.serializeUser(function(user, done) { // passport.js serializing
+passport.serializeUser(function (user, done) { // passport.js serializing
     done(null, user.username);
 });
 
-passport.deserializeUser(function(username, done) { // passport.js deserializing with checking Data Existence
+passport.deserializeUser(function (username, done) { // passport.js deserializing with checking Data Existence
     let db = mysql.createConnection(db_config);
     db.connect();
-    db.query('SELECT * FROM user WHERE username=?', [username], function(err, results){
-    if(err)
-        return done(err, false);
-    if(!results[0])
-        return done(err, false);
-    db.end();
-    return done(null, results[0]);
+    db.query('SELECT * FROM user WHERE username=?', [username], function (err, results) {
+        if (err)
+            return done(err, false);
+        if (!results[0])
+            return done(err, false);
+        db.end();
+        return done(null, results[0]);
     });
+});
+
+
+app.post('/test', (req, res) => {
+    console.log(req.body);
+    res.send(req.body);
 });
 
 
 // Express.js get,post request code
-
 app.post('/add', (req, res) => { // Default entry
     console.log(req.body);
     let db = mysql.createConnection(db_config);
     db.connect();
-    db.query('insert into test(id, number) values(?, ?)', [req.body.id, req.body.number], function(err, results){
+    db.query('insert into test(position, wifi_data) values(?, ?)', [req.body.position, req.body.wifi_data], (err, results) => {
         // console.log(results[0]);
         db.end();
-        return res.send({msg: "success"});
+        return res.send({ msg: "success" });
     });
 });
 
+app.post('/reqMyPosition', (req, res) => {
+    core.findMyPosition(res, 10);
+});
 
-server.listen(port, function() { // Open server
-  console.log(`Listening on http://localhost:${port}/`);
+
+server.listen(port, function () { // Open server
+    console.log(`Listening on http://localhost:${port}/`);
 });

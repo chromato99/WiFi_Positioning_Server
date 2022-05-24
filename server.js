@@ -87,7 +87,7 @@ passport.deserializeUser(function (username, done) { // passport.js deserializin
 
 
 app.post('/test', (req, res) => {
-    console.log(req.body);
+    console.log(req);
     res.send(req.body);
 });
 
@@ -98,14 +98,17 @@ app.post('/add', (req, res) => { // Default entry
     let db = mysql.createConnection(db_config);
     db.connect();
     db.query('insert into test(position, wifi_data) values(?, ?)', [req.body.position, req.body.wifi_data], (err, results) => {
-        // console.log(results[0]);
+        if(err) {
+            return res.send({ msg: "error" });
+        }
+        console.log(results[0]);
         db.end();
         return res.send({ msg: "success" });
     });
 });
 
-app.post('/reqMyPosition', (req, res) => {
-    core.findMyPosition(res, 10);
+app.post('/findPosition', (req, res) => {
+    core.findPosition(req, res, 10);
 });
 
 

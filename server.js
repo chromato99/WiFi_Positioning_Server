@@ -28,66 +28,69 @@ app.use(express.static('public')); // Set static file location
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
-app.use(session({ // Session settings
-    secret: '!@#$%^&*',
-    store: new MySQLStore(db_config),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 6000 * 60 * 60 // 쿠키 유효기간 6시간
-    }
-}));
-app.use(passport.initialize()); // passport.js initialization
-app.use(passport.session());
 
 
-// Passport.js setting
-passport.use(new LocalStrategy(
-    function (username, password, done) {
-        let db = mysql.createConnection(db_config);
-        db.connect();
-        // Get user data from DB to check password
-        db.query('SELECT * FROM user WHERE username=?', [username], (err, results) => {
-            if (err) return done(err);
-            if (!results[0]) // Wrong username
-                return done('please check your username.');
-            else {
-                db.query('UPDATE user SET last_connection=NOW() WHERE username=?', [username]); // Set last connection datetime
-                db.end();
-                let user = results[0];
-                const [encrypted, salt] = user.password.split("$"); // splitting password and salt
-                crypto.pbkdf2(password, salt, 65536, 64, 'sha512', (err, derivedKey) => { // Encrypting input password
-                    if (err) return done(err);
-                    if (derivedKey.toString("hex") === encrypted) // Check its same
-                        return done(null, user);
-                    else
-                        return done('please check your password.');
-                });//pbkdf2
-            }
-        });//query
+// app.use(session({ // Session settings
+//     secret: '!@#$%^&*',
+//     store: new MySQLStore(db_config),
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//         maxAge: 6000 * 60 * 60 // 쿠키 유효기간 6시간
+//     }
+// }));
+// app.use(passport.initialize()); // passport.js initialization
+// app.use(passport.session());
 
-    }
-));
-passport.serializeUser(function (user, done) { // passport.js serializing
-    done(null, user.username);
-});
 
-passport.deserializeUser(function (username, done) { // passport.js deserializing with checking Data Existence
-    let db = mysql.createConnection(db_config);
-    db.connect();
-    db.query('SELECT * FROM user WHERE username=?', [username], function (err, results) {
-        if (err)
-            return done(err, false);
-        if (!results[0])
-            return done(err, false);
-        db.end();
-        return done(null, results[0]);
-    });
-});
+// // Passport.js setting
+// passport.use(new LocalStrategy(
+//     function (username, password, done) {
+//         let db = mysql.createConnection(db_config);
+//         db.connect();
+//         // Get user data from DB to check password
+//         db.query('SELECT * FROM user WHERE username=?', [username], (err, results) => {
+//             if (err) return done(err);
+//             if (!results[0]) // Wrong username
+//                 return done('please check your username.');
+//             else {
+//                 db.query('UPDATE user SET last_connection=NOW() WHERE username=?', [username]); // Set last connection datetime
+//                 db.end();
+//                 let user = results[0];
+//                 const [encrypted, salt] = user.password.split("$"); // splitting password and salt
+//                 crypto.pbkdf2(password, salt, 65536, 64, 'sha512', (err, derivedKey) => { // Encrypting input password
+//                     if (err) return done(err);
+//                     if (derivedKey.toString("hex") === encrypted) // Check its same
+//                         return done(null, user);
+//                     else
+//                         return done('please check your password.');
+//                 });//pbkdf2
+//             }
+//         });//query
+
+//     }
+// ));
+// passport.serializeUser(function (user, done) { // passport.js serializing
+//     done(null, user.username);
+// });
+
+// passport.deserializeUser(function (username, done) { // passport.js deserializing with checking Data Existence
+//     let db = mysql.createConnection(db_config);
+//     db.connect();
+//     db.query('SELECT * FROM user WHERE username=?', [username], function (err, results) {
+//         if (err)
+//             return done(err, false);
+//         if (!results[0])
+//             return done(err, false);
+//         db.end();
+//         return done(null, results[0]);
+//     });
+// });
 
 
 app.post('/test', (req, res) => {
-    console.log(req);
+    console.log("/test")
+    console.log(req.body);
     res.send(req.body);
 });
 
@@ -97,18 +100,20 @@ app.post('/add', (req, res) => { // Default entry
     console.log(req.body);
     let db = mysql.createConnection(db_config);
     db.connect();
-    db.query('insert into test(position, wifi_data) values(?, ?)', [req.body.position, req.body.wifi_data], (err, results) => {
+    db.query('insert into wifi_data(position, wifi_data) values(?, ?)', [req.body.position, JSON.stringify(req.body.wifi_data)], (err) => {
         if(err) {
+            console.log(err);
             return res.send({ msg: "error" });
         }
-        console.log(results[0]);
         db.end();
         return res.send({ msg: "success" });
     });
 });
 
 app.post('/findPosition', (req, res) => {
-    core.findPosition(req, res, 10);
+    console.log("/findPosition");
+    console.log(req.body);
+    core.findPosition(req, res);
 });
 
 

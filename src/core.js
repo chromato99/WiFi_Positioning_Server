@@ -12,7 +12,7 @@ exports.findPosition = (req, res) => {
         db.end();
 
 
-        let best_avg = 10000000;
+        let best_avg = Infinity;
         let best_position = "";
         let best_count = 0;
         // 로직을 여기에 넣으면 됨!
@@ -40,6 +40,10 @@ exports.findPosition = (req, res) => {
             }
         }
 
+
+        if(best_avg == Infinity) {
+            best_avg = -1;
+        }
         return res.send({
             msg : "success",
             position : best_position,

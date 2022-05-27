@@ -1,7 +1,7 @@
 let mysql = require("mysql");
 const db_config = require('./db-config');
 
-exports.findPosition = function(req, res) {
+exports.findPosition = (req, res) => {
     let input_wifi_data = req.body.wifi_data;
     let db = mysql.createConnection(db_config);
     db.connect();

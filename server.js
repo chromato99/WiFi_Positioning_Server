@@ -117,6 +117,6 @@ app.post('/findPosition', (req, res) => {
 });
 
 
-server.listen(port, function () { // Open server
+server.listen(port, () => { // Open server
     console.log(`Listening on http://localhost:${port}/`);
 });

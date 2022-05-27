@@ -128,31 +128,6 @@ json형태로 새로운 데이터를 전달받아 db에 insert해준다.
         }
     ]
 }
-{
-    "position" : "307호",
-    "wifi_data" : [
-        {
-            "mac" : 111,
-            "rss" : -60
-        },
-        {
-            "mac" : 112,
-            "rss" : -30
-        },
-        {
-            "mac" : 113,
-            "rss" : -55
-        },
-        {
-            "mac" : 114,
-            "rss" : -85
-        },
-        {
-            "mac" : 116,
-            "rss" : -88
-        }
-    ]
-}
 */
 app.post('/add', (req, res) => { // Default entry
     console.log(req.body);

@@ -133,13 +133,20 @@ app.post('/add', (req, res) => { // Default entry
     console.log(req.body);
     let db = mysql.createConnection(db_config);
     db.connect();
-    db.query('insert into wifi_data(position, wifi_data) values(?, ?)', [req.body.position, JSON.stringify(req.body.wifi_data)], (err) => {
+    db.query('insert into wifi_data(position, wifi_data) values(?, ?)', [req.body.position, JSON.stringify(req.body.wifi_data)], (err, result) => {
         if(err) {
             console.log(err);
             return res.send({ msg: "error" });
         }
         db.end();
-        return res.send({ msg: "success" });
+
+        let res_data = { 
+            msg: "success",
+            insertId: result.insertId
+        };
+
+        console.log("res_data : ", res_data);
+        return res.send(res_data);
     });
 });
 

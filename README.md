@@ -1,4 +1,11 @@
 # WiFi_Positioning_Server
-Experimental project for WiFi Positioning
+Gachon Univefrsity Sensor and Wireless Network Class Term Project.<br>
+This is a project for the experimental implementation of WiFi Indoor Positioning technology.
 
+This is an app repository for server, and the client implementation can be found at the link below.<br>
 Client App : https://github.com/chromato99/WiFi_Positining 
+
+# Tech Stack
+
+Node.js<br>
+MySQL

@@ -11,8 +11,10 @@ let crypto = require('crypto');
 let passport = require('passport');
 let LocalStrategy = require('passport-local').Strategy;
 let mysql = require('mysql');
+let fs = require('fs');
 
 const db_config = require('./src/db-config');
+const password = JSON.parse(fs.readFileSync('./src/password.json', 'utf-8'));
 
 
 
@@ -131,23 +133,27 @@ json형태로 새로운 데이터를 전달받아 db에 insert해준다.
 */
 app.post('/add', (req, res) => { // Default entry
     console.log(req.body);
-    let db = mysql.createConnection(db_config);
-    db.connect();
-    db.query('insert into wifi_data(position, wifi_data) values(?, ?)', [req.body.position, JSON.stringify(req.body.wifi_data)], (err, result) => {
-        if(err) {
-            console.log(err);
-            return res.send({ msg: "error" });
-        }
-        db.end();
+    if(req.body.password == password.key) {
+        let db = mysql.createConnection(db_config);
+        db.connect();
+        db.query('insert into wifi_data(position, wifi_data) values(?, ?)', [req.body.position, JSON.stringify(req.body.wifi_data)], (err, result) => {
+            if(err) {
+                console.log(err);
+                return res.send({ msg: "error" });
+            }
+            db.end();
 
-        let res_data = { 
-            msg: "success",
-            insertId: result.insertId
-        };
+            let res_data = { 
+                msg: "success",
+                insertId: result.insertId
+            };
 
-        console.log("res_data : ", res_data);
-        return res.send(res_data);
-    });
+            console.log("res_data : ", res_data);
+            return res.send(res_data);
+        });
+    } else {
+        res.send({error: "incorrect password"});
+    } 
 });
 
 

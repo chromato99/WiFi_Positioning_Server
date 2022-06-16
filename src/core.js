@@ -3,7 +3,7 @@ const db_config = require('./db-config');
 const {Worker} = require('worker_threads');
 const path = require('path');
 const thread_num = 3;
-const a = 0.5;
+const a = 0.6;
 const k = 4
 
 

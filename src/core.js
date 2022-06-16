@@ -2,7 +2,9 @@ let mysql = require("mysql");
 const db_config = require('./db-config');
 const {Worker} = require('worker_threads');
 const path = require('path');
-let thread_num = 3;
+const thread_num = 3;
+const a = 0.5;
+const k = 4
 
 
 // 위치 추정을 계산해주는 함수
@@ -23,22 +25,44 @@ exports.findPosition = (req, res) => {
 
         let test_result_arr = new Array();
         let finish_thread_num = 0;
+
+        // 새로운 스레드를 호출하는 부분
+        // 사전에 정해진 스레드 개수만큼 데이터를 분할에 나눠서 연산을 진행하게 된다.
         for(let i = 0;  i < thread_num; i += 1) {
 
             let myWorker = new Worker(path.join(__dirname, './core-worker.js'));
             myWorker.postMessage({
                 db_data_arr: db_data_arr.splice(0, splice_length),
-                input_wifi_data: input_wifi_data
+                input_wifi_data: input_wifi_data,
+                a: a
             });
             
             //INFO: 스레드로부터 데이터를 받음
             myWorker.on('message', result => {
-                for(let r of result) {
-                    test_result_arr.push(r);
-                }
+                // 각각의 스레드로부터 넘어온 배열 데이터를 합친다.
+                test_result_arr.push(...result);
+
+
+                // 모든 스레드로부터 값을 받았다면 다음으로 넘어간다.
                 if(++finish_thread_num >= thread_num) {
-                    test_result_arr.sort((obj1, obj2) => obj1.ratio - obj2.ratio);
-                    let best_calc = this.ratioKNN(test_result_arr, 4);
+
+                    // 최대값을 기준으로 일정 범위 안에 있는 값만 추출
+                    test_result_arr.sort((obj1, obj2) => obj2.count - obj1.count);
+                    console.log(test_result_arr);
+                    let largest_count = test_result_arr[0].count;
+                    let filtered_arr = new Array();
+                    for(let i = 0; test_result_arr[i] && test_result_arr[i].count >= (largest_count * a); i++) {
+                        filtered_arr.push(test_result_arr[i]);
+                        if(test_result_arr[i] && test_result_arr[i].ratio < best_calc.ratio) {
+                            best_calc = test_result_arr[i];
+                        }
+                    }
+
+
+
+                    // 내림차순으로 정렬후 상위 4개를 뽑아 비교후 출력
+                    filtered_arr.sort((obj1, obj2) => obj1.ratio - obj2.ratio);
+                    let best_calc = this.ratioKNN(filtered_arr, k);
 
                     console.log(best_calc);
                     return res.send({
@@ -91,7 +115,7 @@ exports.bruteForce = (db_data_arr, input_wifi_data, margin) => {
 
     calc_list.sort((obj1, obj2) => obj2.count - obj1.count);
     let largest_count = calc_list[0].count;
-    for(let i = 0; calc_list[i].count > (largest_count * margin); i++) {
+    for(let i = 0; calc_list[i] && calc_list[i].count >= (largest_count * margin); i++) {
         if(calc_list[i] && calc_list[i].avg < best_calc.avg) {
             best_calc = calc_list[i];
         }
@@ -155,11 +179,10 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
 
 
     
-
     calc_list.sort((obj1, obj2) => obj2.count - obj1.count);
     let largest_count = calc_list[0].count;
     let filtered_calc_list = new Array();
-    for(let i = 0; calc_list[i].count > (largest_count * a); i++) {
+    for(let i = 0; calc_list[i] && calc_list[i].count >= (largest_count * a); i++) {
         filtered_calc_list.push(calc_list[i]);
         if(calc_list[i] && calc_list[i].ratio < best_calc.ratio) {
             best_calc = calc_list[i];
@@ -180,13 +203,13 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
     return best_calc;
 }
 
-exports.ratioKNN = (res, k) => {
+exports.ratioKNN = (result_list, k) => {
     let calc_top_list = new Array();
-    for(let i = 0; i < k && i < res.length; i++) {
-        if(calc_top_list[res[i].position]) {
-            calc_top_list[res[i].position]++;
+    for(let i = 0; i < k && i < result_list.length; i++) {
+        if(calc_top_list[result_list[i].position]) {
+            calc_top_list[result_list[i].position]++;
         } else {
-            calc_top_list[res[i].position] = 1;
+            calc_top_list[result_list[i].position] = 1;
         }
     }
     
@@ -200,13 +223,13 @@ exports.ratioKNN = (res, k) => {
         if(value > best_calc.knn_count) {
             best_calc.knn_count = value;
             best_calc.position = key;
-        } else if(value == best_calc.knn_count && key == res[0].position) {
+        } else if(value == best_calc.knn_count && key == result_list[0].position) {
             best_calc.knn_count = value;
             best_calc.position = key;
         }
     }
 
-    best_calc.calc_top_list = res.slice(0, k);
+    best_calc.calc_top_list = result_list.slice(0, k);
 
     return best_calc;
 }

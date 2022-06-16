@@ -3,7 +3,7 @@ const db_config = require('./db-config');
 const {Worker} = require('worker_threads');
 const path = require('path');
 const thread_num = 3;
-const a = 0.6;
+const a = 0.5;
 const k = 4
 
 
@@ -48,10 +48,12 @@ exports.findPosition = (req, res) => {
 
                     // 최대값을 기준으로 일정 범위 안에 있는 값만 추출
                     test_result_arr.sort((obj1, obj2) => obj2.count - obj1.count);
-                    console.log(test_result_arr);
-                    let largest_count = test_result_arr[0].count;
+                    let largest_count = 0;
+                    if(test_result_arr[0]) largest_count = test_result_arr[0].count;
+
+                    
                     let filtered_arr = new Array();
-                    for(let i = 0; test_result_arr[i] && test_result_arr[i].count >= (largest_count * a); i++) {
+                    for(let i = 0; test_result_arr[i] && test_result_arr[i].count > (largest_count * a); i++) {
                         filtered_arr.push(test_result_arr[i]);
                         if(test_result_arr[i] && test_result_arr[i].ratio < best_calc.ratio) {
                             best_calc = test_result_arr[i];
@@ -115,7 +117,7 @@ exports.bruteForce = (db_data_arr, input_wifi_data, margin) => {
 
     calc_list.sort((obj1, obj2) => obj2.count - obj1.count);
     let largest_count = calc_list[0].count;
-    for(let i = 0; calc_list[i] && calc_list[i].count >= (largest_count * margin); i++) {
+    for(let i = 0; calc_list[i] && calc_list[i].count > (largest_count * margin); i++) {
         if(calc_list[i] && calc_list[i].avg < best_calc.avg) {
             best_calc = calc_list[i];
         }
@@ -182,7 +184,7 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
     calc_list.sort((obj1, obj2) => obj2.count - obj1.count);
     let largest_count = calc_list[0].count;
     let filtered_calc_list = new Array();
-    for(let i = 0; calc_list[i] && calc_list[i].count >= (largest_count * a); i++) {
+    for(let i = 0; calc_list[i] && calc_list[i].count > (largest_count * a); i++) {
         filtered_calc_list.push(calc_list[i]);
         if(calc_list[i] && calc_list[i].ratio < best_calc.ratio) {
             best_calc = calc_list[i];

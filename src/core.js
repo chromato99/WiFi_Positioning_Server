@@ -33,14 +33,13 @@ exports.findPosition = (req, res) => {
             //INFO: 스레드로부터 데이터를 받음
             myWorker.on('message', result => {
                 test_result_arr.push(...result);
-                finish_thread_num++;
-                if(finish_thread_num >= thread_num) {
+                if(++finish_thread_num >= thread_num) {
                     test_result_arr.sort((obj1, obj2) => obj1.ratio - obj2.ratio);
-                    console.log(test_result_arr[0].calc_top_list);
-                    delete test_result_arr[0].calc_top_list;
-                    console.log("res_data : ", test_result_arr[0]);
-                    
-                    return res.send(test_result_arr[0]);
+                    let best_calc = this.ratioKNN(test_result_arr, 5);
+
+                    console.log(best_calc);
+                    delete best_calc.calc_top_list;
+                    return res.send(best_calc);
                 }
             });
         }
@@ -163,7 +162,7 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
     }
     
     filtered_calc_list.sort((obj1, obj2) => obj1.ratio - obj2.ratio);
-    best_calc.calc_top_list = filtered_calc_list.slice(0, 15);
+    best_calc.calc_top_list = filtered_calc_list.slice(0, 10);
 
 
     // calc_list.sort((obj1, obj2) => obj1.ratio - obj2.ratio);
@@ -176,10 +175,7 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
     return best_calc;
 }
 
-
-exports.bruteForceWithRatioKNN = (db_data_arr, input_wifi_data, a, k) => {
-    let res = exports.bruteForceWithRatio(db_data_arr, input_wifi_data, a);
-
+exports.ratioKNN = (res, k) => {
     let calc_top_list = new Array();
     for(let i = 0; i < k && i < res.calc_top_list.length; i++) {
         if(calc_top_list[res.calc_top_list[i].position]) {
@@ -191,7 +187,7 @@ exports.bruteForceWithRatioKNN = (db_data_arr, input_wifi_data, a, k) => {
     
 
     let best_calc = {
-        position: "not foun",
+        position: "not found",
         knn_count: 0,
         calc_top_list: []
     }
@@ -206,6 +202,15 @@ exports.bruteForceWithRatioKNN = (db_data_arr, input_wifi_data, a, k) => {
     }
 
     best_calc.calc_top_list = res.calc_top_list.slice(0, k);
+
+    return best_calc;
+}
+
+
+exports.bruteForceWithRatioKNN = (db_data_arr, input_wifi_data, a, k) => {
+    let res = exports.bruteForceWithRatio(db_data_arr, input_wifi_data, a);
+
+    let best_calc = exports.ratioKNN(res, k);
 
     return best_calc;
 }

@@ -1,8 +1,8 @@
 let mysql = require("mysql");
 const db_config = require('./db-config');
+const {Worker} = require('worker_threads');
 const path = require('path');
 let thread_num = 3;
-let finish_thread_num = 0;
 
 
 // 위치 추정을 계산해주는 함수
@@ -22,6 +22,7 @@ exports.findPosition = (req, res) => {
         let splice_length = Math.ceil(db_data_arr.length / 3);
 
         let test_result_arr = new Array();
+        let finish_thread_num = 0;
         for(let i = 0;  i < thread_num; i += 1) {
 
             let myWorker = new Worker(path.join(__dirname, './core-worker.js'));
@@ -32,14 +33,18 @@ exports.findPosition = (req, res) => {
             
             //INFO: 스레드로부터 데이터를 받음
             myWorker.on('message', result => {
-                test_result_arr.push(...result);
+                for(let r of result) {
+                    test_result_arr.push(r);
+                }
                 if(++finish_thread_num >= thread_num) {
                     test_result_arr.sort((obj1, obj2) => obj1.ratio - obj2.ratio);
-                    let best_calc = this.ratioKNN(test_result_arr, 5);
+                    let best_calc = this.ratioKNN(test_result_arr, 4);
 
                     console.log(best_calc);
-                    delete best_calc.calc_top_list;
-                    return res.send(best_calc);
+                    return res.send({
+                        position: best_calc.position,
+                        k_count: best_calc.knn_count
+                    });
                 }
             });
         }
@@ -177,11 +182,11 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
 
 exports.ratioKNN = (res, k) => {
     let calc_top_list = new Array();
-    for(let i = 0; i < k && i < res.calc_top_list.length; i++) {
-        if(calc_top_list[res.calc_top_list[i].position]) {
-            calc_top_list[res.calc_top_list[i].position]++;
+    for(let i = 0; i < k && i < res.length; i++) {
+        if(calc_top_list[res[i].position]) {
+            calc_top_list[res[i].position]++;
         } else {
-            calc_top_list[res.calc_top_list[i].position] = 1;
+            calc_top_list[res[i].position] = 1;
         }
     }
     
@@ -195,13 +200,13 @@ exports.ratioKNN = (res, k) => {
         if(value > best_calc.knn_count) {
             best_calc.knn_count = value;
             best_calc.position = key;
-        } else if(value == best_calc.knn_count && key == res.calc_top_list[0].position) {
+        } else if(value == best_calc.knn_count && key == res[0].position) {
             best_calc.knn_count = value;
             best_calc.position = key;
         }
     }
 
-    best_calc.calc_top_list = res.calc_top_list.slice(0, k);
+    best_calc.calc_top_list = res.slice(0, k);
 
     return best_calc;
 }
@@ -210,7 +215,7 @@ exports.ratioKNN = (res, k) => {
 exports.bruteForceWithRatioKNN = (db_data_arr, input_wifi_data, a, k) => {
     let res = exports.bruteForceWithRatio(db_data_arr, input_wifi_data, a);
 
-    let best_calc = exports.ratioKNN(res, k);
+    let best_calc = exports.ratioKNN(res.calc_top_list, k);
 
     return best_calc;
 }

@@ -6,7 +6,6 @@
 const { parentPort } = require('worker_threads');
 let core = require('../src/core');
 
-/** @jobSize number */
 parentPort.on('message', data => { 
     // main thread로부터 넘겨받은 파라미터는 data 객체로 받아오게 된다.
     let res_data = core.bruteForceWithRatio(data.db_data_arr, data.input_wifi_data, data.a);

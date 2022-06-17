@@ -55,9 +55,6 @@ exports.findPosition = (req, res) => {
                     let filtered_arr = new Array();
                     for(let i = 0; test_result_arr[i] && test_result_arr[i].count > (largest_count * a); i++) {
                         filtered_arr.push(test_result_arr[i]);
-                        if(test_result_arr[i] && test_result_arr[i].ratio < best_calc.ratio) {
-                            best_calc = test_result_arr[i];
-                        }
                     }
 
 

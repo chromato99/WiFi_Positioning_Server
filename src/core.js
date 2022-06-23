@@ -100,7 +100,7 @@ exports.bruteForce = (db_data_arr, input_wifi_data, margin) => {
         let db_wifi_data = JSON.parse(db_data.wifi_data); // 데이터에서 wifi 신호값이 담긴 배열만 뽑아 저장
         for(let one_wifi_data of db_wifi_data) { // 데이터 셋에서 wifi 신호값을 하나씩 불러온다.
             let same_mac_data = input_wifi_data.filter(e => e.mac == one_wifi_data.mac); // 데이터 셋에서 불러온 와이파이 ap와 같은 것이 있는지 확인
-            if(same_mac_data.length != 0 && "94:64:24" == one_wifi_data.mac.slice(0,8)) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
+            if(same_mac_data.length != 0) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
                 // console.log("same mac");
                 // console.log(same_mac_data);
                 calc.count++;
@@ -154,7 +154,7 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
         let db_wifi_data = JSON.parse(db_data.wifi_data); // 데이터에서 wifi 신호값이 담긴 배열만 뽑아 저장
         for(let one_wifi_data of db_wifi_data) { // 데이터 셋에서 wifi 신호값을 하나씩 불러온다.
             let same_mac_data = input_wifi_data.filter(e => e.mac == one_wifi_data.mac); // 데이터 셋에서 불러온 와이파이 ap와 같은 것이 있는지 확인
-            if(same_mac_data.length != 0 && "94:64:24" == one_wifi_data.mac.slice(0,8)) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
+            if(same_mac_data.length != 0) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
                 // console.log("same mac");
                 // console.log(same_mac_data);
                 calc.count++;

@@ -1,7 +1,7 @@
 let express = require('express');
 
 let app = express();
-let port = 80;
+let port = 8004;
 
 let server = require('http').createServer(app);
 let compression = require('compression');
@@ -44,24 +44,24 @@ json형태로 새로운 데이터를 전달받아 db에 insert해준다.
     "position" : "307호",
     "wifi_data" : [
         {
-            "mac" : 111,
-            "rss" : -60
+            "bssid" : 111,
+            "rssi" : -60
         },
         {
-            "mac" : 112,
-            "rss" : -30
+            "bssid" : 112,
+            "rssi" : -30
         },
         {
-            "mac" : 113,
-            "rss" : -55
+            "bssid" : 113,
+            "rssi" : -55
         },
         {
-            "mac" : 114,
-            "rss" : -85
+            "bssid" : 114,
+            "rssi" : -85
         },
         {
-            "mac" : 116,
-            "rss" : -88
+            "bssid" : 116,
+            "rssi" : -88
         }
     ]
 }
@@ -104,26 +104,27 @@ app.post('/add', (req, res) => { // Default entry
 위치 추정은 ./src/core.js에 정의된 함수에서 계산한다.
 데이터 형태는 add와 비슷하지만 위치를 모르는 상태이니 position값은 빼주면 된다.
 {
+    "position" : "",
     "wifi_data" : [
         {
-            "mac" : 111,
-            "rss" : -65
+            "bssid" : 111,
+            "rssi" : -60
         },
         {
-            "mac" : 112,
-            "rss" : -35
+            "bssid" : 112,
+            "rssi" : -30
         },
         {
-            "mac" : 113,
-            "rss" : -60
+            "bssid" : 113,
+            "rssi" : -55
         },
         {
-            "mac" : 114,
-            "rss" : -88
+            "bssid" : 114,
+            "rssi" : -85
         },
         {
-            "mac" : 117,
-            "rss" : -88
+            "bssid" : 116,
+            "rssi" : -88
         }
     ]
 }

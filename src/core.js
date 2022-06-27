@@ -99,12 +99,12 @@ exports.bruteForce = (db_data_arr, input_wifi_data, margin) => {
 
         let db_wifi_data = JSON.parse(db_data.wifi_data); // 데이터에서 wifi 신호값이 담긴 배열만 뽑아 저장
         for(let one_wifi_data of db_wifi_data) { // 데이터 셋에서 wifi 신호값을 하나씩 불러온다.
-            let same_mac_data = input_wifi_data.filter(e => e.mac == one_wifi_data.mac); // 데이터 셋에서 불러온 와이파이 ap와 같은 것이 있는지 확인
-            if(same_mac_data.length != 0) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
-                // console.log("same mac");
-                // console.log(same_mac_data);
+            let same_bssid_data = input_wifi_data.filter(e => e.bssid == one_wifi_data.bssid); // 데이터 셋에서 불러온 와이파이 ap와 같은 것이 있는지 확인
+            if(same_bssid_data.length != 0) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
+                // console.log("same bssid");
+                // console.log(same_bssid_data);
                 calc.count++;
-                sum += Math.abs(one_wifi_data.rss - same_mac_data[0].rss); // 차에 절대값을 구해 합에 저장
+                sum += Math.abs(one_wifi_data.rssi - same_bssid_data[0].rssi); // 차에 절대값을 구해 합에 저장
             }
         }
         calc.avg = sum / calc.count; // 각 차의 합을 ap갯수로 나눠 평균값을 구한다.
@@ -153,12 +153,12 @@ exports.bruteForceWithRatio = (db_data_arr, input_wifi_data, a) => {
 
         let db_wifi_data = JSON.parse(db_data.wifi_data); // 데이터에서 wifi 신호값이 담긴 배열만 뽑아 저장
         for(let one_wifi_data of db_wifi_data) { // 데이터 셋에서 wifi 신호값을 하나씩 불러온다.
-            let same_mac_data = input_wifi_data.filter(e => e.mac == one_wifi_data.mac); // 데이터 셋에서 불러온 와이파이 ap와 같은 것이 있는지 확인
-            if(same_mac_data.length != 0) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
-                // console.log("same mac");
-                // console.log(same_mac_data);
+            let same_bssid_data = input_wifi_data.filter(e => e.bssid == one_wifi_data.bssid); // 데이터 셋에서 불러온 와이파이 ap와 같은 것이 있는지 확인
+            if(same_bssid_data.length != 0) { // 데이터 셋과 같은 와이파이 신호 값이 있을때 그 신호와 얼마나 유사한지 차를 구해 계산
+                // console.log("same bssid");
+                // console.log(same_bssid_data);
                 calc.count++;
-                sum += Math.abs(one_wifi_data.rss - same_mac_data[0].rss); // 차에 절대값을 구해 합에 저장
+                sum += Math.abs(one_wifi_data.rssi - same_bssid_data[0].rssi); // 차에 절대값을 구해 합에 저장
             }
         }
         // if(calc.count <= a) {
